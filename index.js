@@ -1,79 +1,48 @@
-// No terminal: 
-// npm init
-// npm i express
-// node index.js -> executa a API
-// instalar extensão RapidAPI Client no VSCode
+/* 
+Instale as bibliotecas e o cliente de API:
+npm init
+npm i express
+Procure pela extensão RapidAPI Client no VSCode.
+*/
+// Para executar a API no terminal: node index.js
+// Link para testar a API: http://localhost:3000/famosos
 const express = require("express")
 const app = express()
 const port = 3000
-app.use(express.json())
+app.use(express.json()) 
 const fs = require('fs')
 
-app.post("/clientes", (req, res) => {
-    const cliente = req.body
+
+app.post("/aulas", (req, res) => {
+    const aula = req.body
     try {
-        // abrir o arquivo
-        const bd = JSON.parse(fs.readFileSync("bd.json", "utf8"))
-        // adicionar o cliente
-        bd.push(cliente)
-        // salvar o arquivo
-        fs.writeFileSync("bd.json", JSON.stringify(bd), "utf8")
-        // resposta
-        res.status(201).json({resposta: "Cliente cadastrado!"})
+       
+        const aulas = JSON.parse(fs.readFileSync("aulas.json", "utf8"))
+      
+        aulas.push(aula)
+     
+        fs.writeFileSync("aulas.json", JSON.stringify(aulas), "utf8")
+      
+        res.status(201).json({resposta: "Aula cadastrada"})
     } catch (erro) {
         res.status(500).json({erro: erro.message})
     }
 })
 
-app.get("/clientes", (req, res) => {
-    try {
-        const bd = JSON.parse(fs.readFileSync("bd.json", "utf8"))
-        res.status(200).json({resposta: bd})
-    } catch (erro) {
-        res.status(500).json({erro: erro.message})
-    }
-})
+// Lê o último ID
+const idData = JSON.parse(fs.readFileSync("id.json", "utf8"))
+const novoId = idData.ultimoId + 1
 
+// Atualiza o contador de ID
+idData.ultimoId = novoId
+fs.writeFileSync("id.json", JSON.stringify(idData, null, 2), "utf8")
 
-app.get("/clientes/:cpf", (req, res) => {
-    const cpf = req.params.cpf
-    try {
-        const bd = JSON.parse(fs.readFileSync("bd.json", "utf8"))
-        const cliente = bd.find((cliente) => cliente.cpf == cpf)
-        if(!cliente) {
-            return res.status(404).json({erro: "Cliente não existe no BD!"})
-        }
-        res.status(200).json({resposta: cliente})
-    } catch (erro) {
-        res.status(500).json({erro: erro.message})
-    }
-})
-
-app.delete("/clientes/:cpf", (req, res) => {
-    // pegar o cpf da rota
-    const cpf = req.params.cpf
-    try {
-        // abrir o banco de dados
-        const bd = JSON.parse(fs.readFileSync("bd.json", "utf8"))
-        // encontrar o índice do cliente a ser excluido
-        const indiceCliente = bd.findIndex((cliente) => cliente.cpf == cpf)
-        // remover o indice da lista
-        if (indiceCliente == -1) {
-            return res.status(404).json({erro: "O cliente não existe"})
-        }
-        bd.splice(indiceCliente, 1)
-        // atualizar o arquivo
-        // dar uma resposta para o cliente
-        res.status(200).json({resposta: "Cliente excluído com sucesso!"})
-    } catch (error){
-        res.status(500).json({erro: erro.message})
-    }
-})
+// Cria a aula com o novo ID
+const aula = {
+    id: novoId,
+    ...req.body
+}
 
 app.listen(port, ()=>{
-    console.log("API rodando na porta" + port)
+    console.log("API rodando na porta " + port)
 })
-
-// GET http://localhost:3000/clientes
-
-// TESTAR TODAS AS ROTAS: post, get geral e get cpf!
